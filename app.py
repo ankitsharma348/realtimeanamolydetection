@@ -7,7 +7,9 @@ from datetime import datetime
 import random
 import pickle
 from flask import Flask, request, jsonify
-import os
+import io
+import base64
+import csv
 
 # Initialize Flask server and Dash app
 server = Flask(__name__)
@@ -77,6 +79,10 @@ app.layout = html.Div([
     html.Div([  # Table to display all anomalies detected over time
         html.H4("All Detected Anomalies", style={'text-align': 'center', 'color': 'blue'}),
         html.Div(id='anomaly-table-container'),
+        html.Button("Download Anomalies CSV", id="download-button", n_clicks=0)
+    ]),
+    html.Div([  # Hidden div to handle the CSV download
+        dcc.Download(id="download-dataframe-csv")
     ]),
     dcc.Interval(
         id='interval-component',
@@ -92,10 +98,12 @@ app.layout = html.Div([
      Output('current-time-interval', 'children'),
      Output('high-anomaly-modal', 'children'),
      Output('high-anomaly-modal', 'style'),
-     Output('anomaly-table-container', 'children')],
-    [Input('interval-component', 'n_intervals')]
+     Output('anomaly-table-container', 'children'),
+     Output('download-dataframe-csv', 'data')],
+    [Input('interval-component', 'n_intervals'),
+     Input('download-button', 'n_clicks')]
 )
-def update_graphs(n_intervals):
+def update_graphs(n_intervals, download_clicks):
     # Simulate new sensor data
     new_data = generate_synthetic_data()
 
@@ -103,8 +111,8 @@ def update_graphs(n_intervals):
     new_data_array = np.array([[new_data['sensor_1'], new_data['sensor_2'], new_data['sensor_3']]])
     anomaly_score = model.decision_function(new_data_array)[0]
 
-    # Increase anomaly score by 0.5
-    adjusted_anomaly_score = -(anomaly_score) + 0.5
+    # Increase anomaly score by 0.5 and add a random fluctuation between -0.1 and 0.1
+    adjusted_anomaly_score = -(anomaly_score) + 0.5 + random.uniform(-0.1, 0.1)
 
     # Add new data to historical data
     timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
@@ -218,8 +226,17 @@ def update_graphs(n_intervals):
         'text-align': 'center'
     })
 
-    return sensor_figure, anomaly_figure, current_time_interval, modal_content, modal_style, anomaly_table
+    # Handle CSV download when button is clicked
+    if download_clicks > 0:
+        # Convert the anomalies DataFrame to CSV
+        csv_string = anomalies_detected.to_csv(index=False, header=True)
+        # Encode the CSV string to base64 for downloading
+        csv_bytes = io.BytesIO()
+        csv_bytes.write(csv_string.encode())
+        csv_bytes.seek(0)
+        return None, None, None, None, None, anomaly_table, dcc.send_data_frame(csv_bytes, "anomalies.csv")
+
+    return sensor_figure, anomaly_figure, current_time_interval, modal_content, modal_style, anomaly_table, None
 
 if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 5000))
-    app.run_server(debug=True, host='0.0.0.0', port=port,use_reloader=False)
+    app.run_server(debug=True, port=5000, use_reloader=False)
