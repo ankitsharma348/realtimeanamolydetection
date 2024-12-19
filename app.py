@@ -223,4 +223,5 @@ def update_graphs(n_intervals, download_clicks):
     return sensor_figure, anomaly_figure, current_time_interval, anomaly_table, None
 
 if __name__ == '__main__':
-    app.run_server(debug=True, port=5000, use_reloader=False)
+    port = int(os.environ.get('PORT', 5000))
+    app.run_server(debug=True, host='0.0.0.0', port=port,use_reloader=False)
