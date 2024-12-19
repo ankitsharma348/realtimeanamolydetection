@@ -15,7 +15,7 @@ app = dash.Dash(__name__, server=server)
 
 # Generate synthetic sensor data with occasional anomalies
 def generate_synthetic_data():
-    anomaly_chance = 0.02  # 2% chance to generate an anomaly
+    anomaly_chance = 0.10  # 2% chance to generate an anomaly
     if random.random() < anomaly_chance:
         sensor_data = {
             'sensor_1': np.random.normal(320, 2),  # Abnormal Temperature (high)
