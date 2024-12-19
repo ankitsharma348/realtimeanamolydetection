@@ -66,7 +66,7 @@ def predict():
 app.layout = html.Div([
     html.H1("Real-Time Anomaly Detection in Sawmill Trimmer", style={'text-align': 'center', 'font-family': 'Arial, sans-serif'}),
     html.Div([
-        html.H4("Current Time: ", style={'text-align': 'center', 'font-size': '20px', 'font-weight': 'bold'}),
+        html.H4("Current Time in UTC: ", style={'text-align': 'center', 'font-size': '20px', 'font-weight': 'bold'}),
         html.H3(id='current-time-interval', style={'text-align': 'center', 'font-size': '25px', 'font-family': 'Courier New', 'color': 'green'})
     ]),
     html.Div([  # For displaying graphs
