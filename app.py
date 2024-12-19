@@ -9,7 +9,6 @@ import pickle
 from flask import Flask, request, jsonify
 import io
 import base64
-import os
 
 # Initialize Flask server and Dash app
 server = Flask(__name__)
@@ -17,7 +16,7 @@ app = dash.Dash(__name__, server=server)
 
 # Generate synthetic sensor data with occasional anomalies
 def generate_synthetic_data():
-    anomaly_chance = 0.03  # 10% chance to generate an anomaly
+    anomaly_chance = 0.02  # 2% chance to generate an anomaly
     if random.random() < anomaly_chance:
         sensor_data = {
             'sensor_1': np.random.normal(320, 2),  # Abnormal Temperature (high)
@@ -129,19 +128,19 @@ def update_graphs(n_intervals, download_clicks):
             go.Scatter(
                 x=recent_data['timestamp'],
                 y=recent_data['sensor_1'],
-                name='Sensor 1 (Temperature)',
+                name='Sensor 1 (Temperature) [°C]',
                 mode='lines+markers'
             ),
             go.Scatter(
                 x=recent_data['timestamp'],
                 y=recent_data['sensor_2'],
-                name='Sensor 2 (Vibration)',
+                name='Sensor 2 (Vibration) [m/s²]',
                 mode='lines+markers'
             ),
             go.Scatter(
                 x=recent_data['timestamp'],
                 y=recent_data['sensor_3'],
-                name='Sensor 3 (Pressure)',
+                name='Sensor 3 (Pressure) [Pa]',
                 mode='lines+markers'
             )
         ],
@@ -161,12 +160,12 @@ def update_graphs(n_intervals, download_clicks):
                 y=recent_data['anomaly'],
                 name='Anomaly Score',
                 mode='lines',
-                line={'color': 'green'}
+                line={'color': 'black'}
             ),
             go.Scatter(
                 x=[timestamp],
                 y=[0.7],
-                name='Anomaly Threshold',
+                name='',
                 mode='lines',
                 line={'color': 'red', 'dash': 'dash'}
             )
@@ -185,10 +184,8 @@ def update_graphs(n_intervals, download_clicks):
         go.Scatter(
             x=anomaly_points['timestamp'],
             y=anomaly_points['anomaly'],
-            mode='markers+text',
+            mode='markers',
             marker=dict(symbol='star', color='red', size=15),
-            text=['⭐'] * len(anomaly_points),
-            textposition='bottom center',
             name='Anomaly Detected'
         )
     ])
@@ -198,7 +195,7 @@ def update_graphs(n_intervals, download_clicks):
 
     # Create a table for all detected anomalies (only show anomalies)
     anomaly_table = html.Table([
-        html.Tr([html.Th("Timestamp"), html.Th("Sensor 1"), html.Th("Sensor 2"), html.Th("Sensor 3"), html.Th("Anomaly"), html.Th("Is Anomaly")])
+        html.Tr([html.Th("Timestamp"), html.Th("Sensor 1"), html.Th("Sensor 2"), html.Th("Sensor 3"), html.Th("Score"), html.Th("Is Anomaly")])
     ] + [
         html.Tr([html.Td(row['timestamp']), html.Td(f"{row['sensor_1']:.2f}"), html.Td(f"{row['sensor_2']:.2f}"), html.Td(f"{row['sensor_3']:.2f}"), html.Td(f"{row['anomaly']:.2f}"), html.Td(row['is_anomaly'])])
         for i, row in latest_anomalies.iterrows()
@@ -226,5 +223,4 @@ def update_graphs(n_intervals, download_clicks):
     return sensor_figure, anomaly_figure, current_time_interval, anomaly_table, None
 
 if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 5000))
-    app.run_server(debug=True, host='0.0.0.0', port=port,use_reloader=False)
+    app.run_server(debug=True, port=5000, use_reloader=False)
