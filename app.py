@@ -80,7 +80,7 @@ app.layout = html.Div([
     ]),
     dcc.Interval(
         id='interval-component',
-        interval=1 * 1000,  # 1 second interval for updating the graphs
+        interval=10 * 1000,  # 1 second interval for updating the graphs
         n_intervals=0  # Initial trigger for the interval callback
     )
 ])
