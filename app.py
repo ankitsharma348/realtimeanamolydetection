@@ -10,6 +10,7 @@ from flask import Flask, request, jsonify
 import io
 import base64
 import csv
+import os
 
 # Initialize Flask server and Dash app
 server = Flask(__name__)
@@ -239,4 +240,5 @@ def update_graphs(n_intervals, download_clicks):
     return sensor_figure, anomaly_figure, current_time_interval, modal_content, modal_style, anomaly_table, None
 
 if __name__ == '__main__':
-    app.run_server(debug=True, port=5000, use_reloader=False)
+    port = int(os.environ.get('PORT', 5000))
+    app.run_server(debug=True, host='0.0.0.0', port=port,use_reloader=False)
